@@ -23,13 +23,6 @@ function(generate_urdf)
     add_custom_target(${PROJECT_NAME}_${_name}${ARG_SUFFIX}_generate_urdf ALL DEPENDS ${_urdf})
 endfunction()
 
-generate_urdf(XACRO "${PROJECT_SOURCE_DIR}/robots/hsrb4s.urdf.xacro"
-              DEPENDS ${_component_xacros})
-generate_urdf(XACRO "${PROJECT_SOURCE_DIR}/robots/hsrb4s.urdf.xacro"
-              SUFFIX ".obj"
-              DEPENDS ${_component_xacros}
-              XACRO_ARGS use_obj_for_visual:=true use_obj_for_collision:=true)
-
 catkin_package(CATKIN_DEPENDS xacro)
 
 install(DIRECTORY launch robots urdf
