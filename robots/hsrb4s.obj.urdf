@@ -32,6 +32,10 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 -->
 <robot name="hsrb" xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller" xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor">
+  
+  <!-- This Virtual Joint is necessary for Moveit:PlanningScene frame reference, added by @josecisneros001 -->
+  <virtual_joint name="world_joint" type="planar" parent_frame="odom" child_link="base_footprint"/>
+
   <material name="body_main">
     <color rgba="1.0 0.0 0.0 1.0"/>
   </material>
@@ -47,11 +51,52 @@ POSSIBILITY OF SUCH DAMAGE.
   <material name="tablet">
     <color rgba="0.1 0.1 0.2 1.0"/>
   </material>
-  <!--
-    ASUS Xtion PRO LIVE
-    Specs from:
-    http://www.asus.com/Multimedia/Xtion_PRO_LIVE/#specifications
-    -->
+  
+  <link name="odom_tmp">
+    <inertial>
+      <mass value="0.10"/>
+      <!--  assume as sphere, hence inertia = 2.0 * mass * 0.01 * 0.01 / 5.0  -->
+      <inertia ixx="0.000004" ixy="0" ixz="0" iyy="0.000004" iyz="0" izz="0.000004"/>
+    </inertial>
+  </link>
+
+  <link name="odom_xr_link">
+    <inertial>
+      <mass value="0.10"/>
+      <!--  assume as sphere, hence inertia = 2.0 * mass * 0.01 * 0.01 / 5.0  -->
+      <inertia ixx="0.000004" ixy="0" ixz="0" iyy="0.000004" iyz="0" izz="0.000004"/>
+    </inertial>
+  </link>
+
+  <joint name="odom_r" type="revolute">
+    <axis xyz="0 0 1"/>
+    <child link="odom_tmp"/>
+    <parent link="odom_xr_link"/>
+    <limit lower="-3.1416" upper="3.1416" velocity="1.0" effort="0.1"/>
+  </joint>
+
+  <link name="odom_yx_link">
+    <inertial>
+      <mass value="0.10"/>
+      <!--  assume as sphere, hence inertia = 2.0 * mass * 0.01 * 0.01 / 5.0  -->
+      <inertia ixx="0.000004" ixy="0" ixz="0" iyy="0.000004" iyz="0" izz="0.000004"/>
+    </inertial>
+  </link>
+
+  <joint name="odom_y" type="prismatic">
+    <axis xyz="0 1 0"/>
+    <child link="odom_xr_link"/>
+    <parent link="odom_yx_link"/>
+    <limit lower="-10" upper="10" velocity="0.2" effort="0.1"/>
+  </joint>
+
+  <joint name="odom_x" type="prismatic">
+    <axis xyz="1 0 0"/>
+    <child link="odom_yx_link"/>
+    <parent link="base_footprint"/>
+    <limit lower="-10" upper="10" velocity="0.2" effort="0.1"/>
+  </joint>
+
   <link name="base_footprint"/>
   <joint name="base_footprint_joint" type="fixed">
     <parent link="base_footprint"/>
