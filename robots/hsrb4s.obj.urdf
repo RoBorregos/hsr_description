@@ -34,7 +34,7 @@ POSSIBILITY OF SUCH DAMAGE.
 <robot name="hsrb" xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller" xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor">
   
   <!-- This Virtual Joint is necessary for Moveit:PlanningScene frame reference, added by @josecisneros001 -->
-  <virtual_joint name="world_joint" type="planar" parent_frame="odom" child_link="base_footprint"/>
+  <virtual_joint name="world_joint" type="planar" parent_frame="odom" child_link="internal_odom"/>
 
   <material name="body_main">
     <color rgba="1.0 0.0 0.0 1.0"/>
@@ -52,13 +52,37 @@ POSSIBILITY OF SUCH DAMAGE.
     <color rgba="0.1 0.1 0.2 1.0"/>
   </material>
   
-  <link name="odom_tmp">
+
+
+  <link name="internal_odom">
     <inertial>
       <mass value="0.10"/>
       <!--  assume as sphere, hence inertia = 2.0 * mass * 0.01 * 0.01 / 5.0  -->
       <inertia ixx="0.000004" ixy="0" ixz="0" iyy="0.000004" iyz="0" izz="0.000004"/>
     </inertial>
   </link>
+
+  <joint name="odom_y" type="prismatic">
+    <axis xyz="0 1 0"/>
+    <parent link="internal_odom"/>
+    <child link="odom_yx_link"/>
+    <limit lower="-10" upper="10" velocity="0.2" effort="0.1"/>
+  </joint>
+
+  <link name="odom_yx_link">
+    <inertial>
+      <mass value="0.10"/>
+      <!--  assume as sphere, hence inertia = 2.0 * mass * 0.01 * 0.01 / 5.0  -->
+      <inertia ixx="0.000004" ixy="0" ixz="0" iyy="0.000004" iyz="0" izz="0.000004"/>
+    </inertial>
+  </link>
+
+  <joint name="odom_x" type="prismatic">
+    <axis xyz="1 0 0"/>
+    <parent link="odom_yx_link"/>
+    <child link="odom_xr_link"/>
+    <limit lower="-10" upper="10" velocity="0.2" effort="0.1"/>
+  </joint>
 
   <link name="odom_xr_link">
     <inertial>
@@ -70,31 +94,9 @@ POSSIBILITY OF SUCH DAMAGE.
 
   <joint name="odom_r" type="revolute">
     <axis xyz="0 0 1"/>
-    <child link="odom_tmp"/>
     <parent link="odom_xr_link"/>
-    <limit lower="-3.1416" upper="3.1416" velocity="1.0" effort="0.1"/>
-  </joint>
-
-  <link name="odom_yx_link">
-    <inertial>
-      <mass value="0.10"/>
-      <!--  assume as sphere, hence inertia = 2.0 * mass * 0.01 * 0.01 / 5.0  -->
-      <inertia ixx="0.000004" ixy="0" ixz="0" iyy="0.000004" iyz="0" izz="0.000004"/>
-    </inertial>
-  </link>
-
-  <joint name="odom_y" type="prismatic">
-    <axis xyz="0 1 0"/>
-    <child link="odom_xr_link"/>
-    <parent link="odom_yx_link"/>
-    <limit lower="-10" upper="10" velocity="0.2" effort="0.1"/>
-  </joint>
-
-  <joint name="odom_x" type="prismatic">
-    <axis xyz="1 0 0"/>
-    <child link="odom_yx_link"/>
-    <parent link="base_footprint"/>
-    <limit lower="-10" upper="10" velocity="0.2" effort="0.1"/>
+    <child link="base_footprint"/>
+    <limit lower="-6.2832" upper="6.2832" velocity="0.5" effort="0.1"/>
   </joint>
 
   <link name="base_footprint"/>
@@ -1369,7 +1371,13 @@ POSSIBILITY OF SUCH DAMAGE.
     <parent link="hand_palm_link"/>
     <child link="hand_camera_frame"/>
   </joint>
+  <joint name="hand_eef_joint" type="fixed">
+    <origin rpy="0.0 -1.57079 0.0" xyz="0 0.0 0.0"/>
+    <parent link="hand_palm_link"/>
+    <child link="hand_eef_link"/>
+  </joint>
   <link name="hand_camera_frame"/>
+  <link name="hand_eef_link"/>
   <joint name="hand_camera_gazebo_frame_joint" type="fixed">
     <origin rpy="1.5707963268 -1.5707963268 0" xyz="0 0 0"/>
     <parent link="hand_camera_frame"/>
